@@ -1,17 +1,10 @@
-# -------------------------
-# UTF-8 FIX (MUST BE FIRST)
-# -------------------------
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 chcp 65001 | Out-Null
-
-# Clear the PowerShell window and set title
 Clear-Host
 $host.UI.RawUI.WindowTitle = "Fiori's PC Checker Tool"
 
-# -------------------------
-# BANNER
-# -------------------------
 $bannerLines = @(
     "╔══════════════════════════════════════════════════════════════════════════════════╗",
     "║                                                                                  ║",
@@ -34,14 +27,12 @@ foreach ($line in $bannerLines) {
 }
 Write-Host ""
 
-# -------------------------
-# INDEPENDENT PROGRESS BAR FUNCTION (0% to 100% each scan)
-# -------------------------
+
 function Start-Scan {
     param(
         [string]$Message,
         [string]$CompleteMessage,
-        [int]$Duration = 80  # milliseconds per step - controls animation speed
+        [int]$Duration = 80  
     )
     $barWidth = 40
     for ($p = 0; $p -le 100; $p++) {
@@ -59,9 +50,7 @@ function Start-Scan {
     Start-Sleep -Milliseconds 100
 }
 
-# -------------------------
-# OUTPUT SETUP
-# -------------------------
+
 $desktopPath = [System.Environment]::GetFolderPath('Desktop')
 $outputFile = Join-Path $desktopPath "PcCheckLogs.txt"
 if (Test-Path $outputFile) { Clear-Content $outputFile }
