@@ -50,7 +50,6 @@ function Update-Progress {
         $filled = [math]::Floor(($p / 100) * $barWidth)
         $bar = "█" * $filled + "░" * ($barWidth - $filled)
         
-        # Color changes based on progress
         if ($p -lt 33) { $color = "Red" }
         elseif ($p -lt 66) { $color = "Yellow" }
         else { $color = "Green" }
@@ -70,13 +69,9 @@ $desktopPath = [System.Environment]::GetFolderPath('Desktop')
 $outputFile = Join-Path $desktopPath "PcCheckLogs.txt"
 if (Test-Path $outputFile) { Clear-Content $outputFile }
 
-# Globals
 $global:Logged = @{}
 $global:Findings = @()
 
-# -------------------------
-# LOGGING
-# -------------------------
 function Write-Log { param($text) Add-Content $outputFile $text }
 function Add-Finding { 
     param($path,$reason) 
@@ -86,9 +81,6 @@ function Add-Finding {
     }
 }
 
-# -------------------------
-# ONEDRIVE
-# -------------------------
 function Get-OneDrivePath {
     try {
         $path = (Get-ItemProperty "HKCU:\Software\Microsoft\OneDrive" -Name "UserFolder" -ErrorAction SilentlyContinue).UserFolder
@@ -100,9 +92,6 @@ function Get-OneDrivePath {
     } catch { return $null }
 }
 
-# -------------------------
-# SIGNATURE CHECK
-# -------------------------
 function Check-Signature {
     param($item)
     try {
@@ -295,7 +284,7 @@ function Find-Files {
 }
 
 # -------------------------
-# SCAN 7: PCIE & USB
+# SCAN 7: PCIE & USB (FIXED - changed $pid to $devPid)
 # -------------------------
 function Log-PCIEandUSB {
     Update-Progress -Message "Querying PnP device tree..." -TargetPercent 77 -CompleteMessage "PCIe & USB devices enumerated"
@@ -306,14 +295,14 @@ function Log-PCIEandUSB {
         $status = if ($dev.Status -eq "OK") {"Plugged In"} else {"Unplugged/Inactive"}
         if ($dev.PNPDeviceID -match "VEN_([0-9A-F]{4}).*DEV_([0-9A-F]{4})") {
             $vid = $matches[1]
-            $pid = $matches[2]
-        } else { $vid = "Unknown"; $pid = "Unknown" }
-        Write-Log "$name | $status | VID:$vid PID:$pid"
+            $devPid = $matches[2]
+        } else { $vid = "Unknown"; $devPid = "Unknown" }
+        Write-Log "$name | $status | VID:$vid PID:$devPid"
     }
 }
 
 # -------------------------
-# SCAN 8: DEVICE MANAGER
+# SCAN 8: DEVICE MANAGER (FIXED - changed $pid to $devicePID)
 # -------------------------
 function Log-Devices {
     Update-Progress -Message "Querying HID, Net, Display, Mouse..." -TargetPercent 88 -CompleteMessage "Device Manager logged"
@@ -399,7 +388,6 @@ Write-Host "  ──────────────────────
 Write-Host "  Made by @suprsor/Fiori on Discord  |  Full code on GitHub" -ForegroundColor Cyan
 Write-Host ""
 
-# Copy log to clipboard
 if (Test-Path $outputFile) {
     Get-Content $outputFile | Set-Clipboard
     Write-Host "  📋 Log saved to: $outputFile" -ForegroundColor Gray
